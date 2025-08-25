@@ -3,12 +3,14 @@ import uuid
 from datetime import datetime
 from typing import Tuple
 
+
 import numpy as np
 from PIL import Image, ImageOps
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 import cv2
+import secrets
 
 # ------------------- Config -------------------
 from dotenv import load_dotenv
@@ -214,6 +216,35 @@ def init_db():
     """Initialize the SQLite database."""
     db.create_all()
     print("[OK] Database initialized.")
+    
+@app.before_request
+def ensure_csrf_token():
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_urlsafe(32)
+def _check_csrf():
+    token = request.form.get("csrf_token")
+    if not token or token != session.get("csrf_token"):
+        abort(400)
+        
+@app.post("/delete/<int:pid>")
+def delete_photo(pid: int):
+    _check_csrf()
+
+    photo = Photo.query.get_or_404(pid)
+    path = os.path.join(UPLOAD_DIR, photo.filename)
+
+    # 파일 삭제 (없어도 무시)
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        pass
+
+    # DB 삭제
+    db.session.delete(photo)
+    db.session.commit()
+
+    flash("사진이 삭제되었습니다.", "success")
+    return redirect(url_for("gallery"))
 
 if __name__ == "__main__":
     with app.app_context():
