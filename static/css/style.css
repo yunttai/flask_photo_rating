@@ -1,0 +1,18 @@
+.thumb { position: relative; display: block; }
+.star-badge {
+  position: absolute; bottom: .3rem; left: .4rem;
+  background: rgba(0,0,0,.6); color: #fff; padding: .1rem .3rem;
+  border-radius: .25rem; font-weight: 600; font-size: .9rem;
+}
+.star-badge .muted { opacity: .8; margin-left: .25rem; font-weight: 400; }
+
+.stars { position: relative; display: inline-block; font-size: 1.1rem; line-height: 1; }
+.stars .star-base { color: #ddd; }
+.stars .star-fill {
+  color: #f5c518; position: absolute; top: 0; left: 0; white-space: nowrap; overflow: hidden;
+}
+
+img { object-fit: cover; }
+
+/* minor helpers */
+.card-img-top { height: 180px; object-fit: cover; }

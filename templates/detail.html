@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <img src="{{ p.url() }}" class="img-fluid rounded shadow-sm" alt="{{ p.original_name }}">
+  </div>
+  <div class="col-lg-4">
+    <h3 class="fw-bold">평가 결과</h3>
+    <div class="display-6">{{ '%.1f'|format(p.score) }} ★</div>
+    <div class="stars my-2">
+      <span class="star-fill" style="width: {{ (p.score/5.0)*100 }}%;">★★★★★</span>
+      <span class="star-base">★★★★★</span>
+    </div>
+    <p class="text-muted">업로드: {{ p.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</p>
+    <p class="text-muted">파일명: {{ p.original_name }}</p>
+    <form class="mt-3" method="post" action="{{ url_for('api_rerate', pid=p.id) }}" onsubmit="return rerate(event)">
+      <button class="btn btn-outline-secondary" type="submit">다시 계산</button>
+    </form>
+    <div id="recalc-msg" class="small mt-2 text-muted"></div>
+  </div>
+</div>
+<script>
+async function rerate(e){
+  e.preventDefault();
+  const res = await fetch(e.target.action, {method:'POST'});
+  if(res.ok){
+    const data = await res.json();
+    document.getElementById('recalc-msg').innerText = '새 점수: ' + data.score.toFixed(1) + ' ★ (새로고침하면 반영됩니다)';
+  } else {
+    document.getElementById('recalc-msg').innerText = '오류가 발생했습니다.';
+  }
+  return false;
+}
+</script>
+{% endblock %}
