@@ -23,4 +23,4 @@ ENV FLASK_ENV=production
 ENV PYTHONUNBUFFERED=1
 
 # 7. 컨테이너 시작 시 실행할 명령
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
+CMD sh -lc "flask --app app.py init-db && flask run --host=0.0.0.0 --port=5000"
