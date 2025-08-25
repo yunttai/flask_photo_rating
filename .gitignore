@@ -1,0 +1,25 @@
+# 가상환경 / 캐시 / OS 잡파일
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.DS_Store
+Thumbs.db
+
+# 업로드 파일은 저장소에 안 올림(폴더는 유지)
+uploads/
+!uploads/.gitkeep
+
+# 환경변수 파일
+.env
+
+# SQLite DB
+instance/photo_rating.db
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.sqlite3-shm
+*.sqlite3-wal
