@@ -1,9 +1,9 @@
-# version: "3.9"     # ← 경고만 유발하므로 그대로 생략
+version: "3.9"
 
 services:
   web:
-    image: ${DOCKERHUB_USERNAME}/myflask:latest
-    environment:          # ← 맵 형식
+    image: ${IMAGE_REF}
+    environment:
       FLASK_ENV: production
     expose:
       - "5000"
@@ -11,24 +11,27 @@ services:
 
   nginx:
     container_name: nginx
-    image: nginx:alpine
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile.waf
     depends_on:
       - web
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
     volumes:
       - ./nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
       - ./certbot/config:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
-    environment:          # ← 맵 형식
-      DOMAIN: ${DOMAIN}
+      - ./nginx/logs:/var/log/nginx
+      - ./nginx/modsec-logs:/var/log/modsecurity
     entrypoint:
       - sh
-      - -c
+      - -exc
       - |
-        envsubst '$DOMAIN' < /etc/nginx/templates/default.conf.template \
-          > /etc/nginx/conf.d/default.conf
+        envsubst '$DOMAIN' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf
         exec nginx -g 'daemon off;'
     restart: unless-stopped
 
@@ -57,13 +60,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     entrypoint: >
       sh -c "while true; do
-        certbot renew --quiet --deploy-hook 'docker exec nginx nginx -s reload';
-        sleep 12h;
-      done"
+               certbot renew --quiet --deploy-hook 'docker exec nginx nginx -s reload';
+               sleep 12h;
+             done"
     restart: unless-stopped
-
-volumes:
-  certbot-config:
-    driver: local
-  certbot-www:
-    driver: local
